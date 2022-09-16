@@ -66,10 +66,46 @@ func (g *Gitea) getUsers() []string {
 	return ret
 }
 
+func (g *Gitea) getOrgReposPage(org string, page int) []string {
+	var ret []string
+
+	resp, err := http.Get(fmt.Sprintf("%s/api/v1/orgs/%s/repos?page=%d&access_token=%s", g.url, org, page, g.key))
+	if err != nil {
+		fmt.Println("API error", err)
+		return ret
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+
+	var res []repo
+	json.Unmarshal([]byte(body), &res)
+
+	for _, i := range res {
+		ret = append(ret, i.CloneUrl)
+	}
+
+	return ret
+}
+
 func (g *Gitea) getOrgRepos(org string) []string {
 	var ret []string
 
-	resp, err := http.Get(fmt.Sprintf("%s/api/v1/orgs/%s/repos?access_token=%s", g.url, org, g.key))
+	for i := 0; ; i++ {
+		r := g.getOrgReposPage(org, i)
+		if len(r) == 0 {
+			break
+		}
+		ret = append(ret, r...)
+	}
+
+	return ret
+}
+
+func (g *Gitea) getUserReposPage(user string, page int) []string {
+	var ret []string
+
+	resp, err := http.Get(fmt.Sprintf("%s/api/v1/users/%s/repos?page=%d&access_token=%s", g.url, user, page, g.key))
 	if err != nil {
 		fmt.Println("API error", err)
 		return ret
@@ -91,20 +127,12 @@ func (g *Gitea) getOrgRepos(org string) []string {
 func (g *Gitea) getUserRepos(user string) []string {
 	var ret []string
 
-	resp, err := http.Get(fmt.Sprintf("%s/api/v1/users/%s/repos?access_token=%s", g.url, user, g.key))
-	if err != nil {
-		fmt.Println("API error", err)
-		return ret
-	}
-	defer resp.Body.Close()
-
-	body, _ := io.ReadAll(resp.Body)
-
-	var res []repo
-	json.Unmarshal([]byte(body), &res)
-
-	for _, i := range res {
-		ret = append(ret, i.CloneUrl)
+	for i := 0; ; i++ {
+		r := g.getUserReposPage(user, i)
+		if len(r) == 0 {
+			break
+		}
+		ret = append(ret, r...)
 	}
 
 	return ret
