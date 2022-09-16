@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-var giteaUrl, apiKey string
+var gitea Gitea
 
 func myUsage() {
 	fmt.Printf("Usage: %s [OPTIONS] URL APIKEY ...\n", os.Args[0])
@@ -22,8 +22,8 @@ func parseArgs() bool {
 		return true
 	}
 
-	giteaUrl = flag.Arg(0)
-	apiKey = flag.Arg(1)
+	gitea.SetUrl(flag.Arg(0))
+	gitea.SetApiKey(flag.Arg(1))
 	return false
 }
 
@@ -32,5 +32,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(giteaUrl, apiKey)
+	fmt.Println(gitea.Repos())
 }
