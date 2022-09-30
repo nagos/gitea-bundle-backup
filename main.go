@@ -60,7 +60,7 @@ func gitBundle(repo string) {
 	}
 
 	cwd, _ := os.Getwd()
-	err = shellRun("git", cwd, "bundle", "create", fmt.Sprintf("%s/%s_%s", cwd, repo_user, repo_name), "--all")
+	err = shellRun("git", tmp_dir, "bundle", "create", fmt.Sprintf("%s/%s_%s", cwd, repo_user, repo_name), "--all")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
